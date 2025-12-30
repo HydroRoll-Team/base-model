@@ -56,7 +56,6 @@ Issues = "https://github.com/HydroRoll-Team/base-model/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/base_model_trpgner"]
-# 仅包含 Python 源码，模型文件首次运行时自动从 GitHub Release 下载
 artifacts = ["src/base_model_trpgner/**/*.py"]
 
 [tool.hatch.build.targets.sdist]
