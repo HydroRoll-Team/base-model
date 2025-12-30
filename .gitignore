@@ -163,8 +163,5 @@ cython_debug/
 .python-version
 uv.lock
 
-# model
-models/
-
 # dataset
 dataset/

@@ -1,0 +1,50 @@
+{
+  "architectures": [
+    "BertForTokenClassification"
+  ],
+  "attention_probs_dropout_prob": 0.1,
+  "classifier_dropout": null,
+  "dtype": "float32",
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.1,
+  "hidden_size": 256,
+  "id2label": {
+    "0": "O",
+    "1": "B-action",
+    "2": "B-comment",
+    "3": "B-dialogue",
+    "4": "B-speaker",
+    "5": "B-timestamp",
+    "6": "I-action",
+    "7": "I-comment",
+    "8": "I-dialogue",
+    "9": "I-speaker",
+    "10": "I-timestamp"
+  },
+  "initializer_range": 0.02,
+  "intermediate_size": 1024,
+  "label2id": {
+    "B-action": 1,
+    "B-comment": 2,
+    "B-dialogue": 3,
+    "B-speaker": 4,
+    "B-timestamp": 5,
+    "I-action": 6,
+    "I-comment": 7,
+    "I-dialogue": 8,
+    "I-speaker": 9,
+    "I-timestamp": 10,
+    "O": 0
+  },
+  "layer_norm_eps": 1e-12,
+  "max_position_embeddings": 512,
+  "model_type": "bert",
+  "num_attention_heads": 8,
+  "num_hidden_layers": 6,
+  "pad_token_id": 0,
+  "position_embedding_type": "absolute",
+  "transformers_version": "4.57.3",
+  "type_vocab_size": 2,
+  "use_cache": true,
+  "vocab_size": 21128
+}
