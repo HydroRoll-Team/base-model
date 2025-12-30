@@ -77,12 +77,28 @@ jobs:
           mkdir -p onnx-artifact
           cp models/trpg-final/model.onnx onnx-artifact/
           cp models/trpg-final/model.onnx.data onnx-artifact/ || true
+          cp models/trpg-final/config.json onnx-artifact/
+          cp models/trpg-final/tokenizer.json onnx-artifact/
+          cp models/trpg-final/tokenizer_config.json onnx-artifact/
+          cp models/trpg-final/special_tokens_map.json onnx-artifact/
+          cp models/trpg-final/vocab.txt onnx-artifact/
+
+          # 创建压缩包（方便用户下载）
+          cd onnx-artifact
+          zip -r ../model.zip .
+          cd ..
           ls -lh onnx-artifact/
+          ls -lh model.zip
 
       - uses: actions/upload-artifact@v4
         with:
           name: onnx-model
           path: onnx-artifact/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-zip
+          path: model.zip
 
   publish-test-pypi:
     name: Publish to Test PyPI
@@ -168,6 +184,17 @@ jobs:
           path: artifacts/
           merge-multiple: true
 
+      - name: Verify artifact structure
+        run: |
+          echo "📁 Artifact directory structure:"
+          ls -la artifacts/
+          echo ""
+          echo "📦 dist contents:"
+          ls -la artifacts/dist/ || echo "dist not found"
+          echo ""
+          echo "🧠 onnx-model contents:"
+          ls -la artifacts/onnx-model/ || echo "onnx-model not found"
+
       - name: Create Release with ONNX
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -231,7 +258,8 @@ jobs:
             # 上传新的资源
             gh release upload "${VERSION}" \
               artifacts/dist/* \
-              artifacts/onnx-artifact/* \
+              artifacts/onnx-model/* \
+              artifacts/model.zip \
               --repo "${{ github.repository }}" --clobber
           else
             echo "✨ 创建新 release ${VERSION}..."
@@ -240,7 +268,8 @@ jobs:
               --notes-file release_notes.md \
               --title "🚀 ${VERSION}" \
               artifacts/dist/* \
-              artifacts/onnx-artifact/*
+              artifacts/onnx-model/* \
+              artifacts/model.zip
           fi
 
       - name: Commit CHANGELOG.md
