@@ -53,3 +53,4 @@ if __name__ == "__main__":
         f.write("\n".join(char_conll_lines) + "\n")
 
     print(f"Converted {input_fp} to character-level CoNLL format at {output_fp}")
+

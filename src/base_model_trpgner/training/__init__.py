@@ -36,7 +36,7 @@ def train_ner_model(
         resume_from_checkpoint: 恢复检查点路径
 
     Examples:
-        >>> from basemodel.training import train_ner_model
+        >>> from basemodeltrpgner.training import train_ner_model
         >>> train_ner_model(
         ...     conll_data="./data",
         ...     output_dir="./my_model",
@@ -59,7 +59,7 @@ def train_ner_model(
         ) from e
 
     # 导入数据处理函数
-    from basemodel.utils.conll import load_conll_dataset, tokenize_and_align_labels
+    from base_model_trpgner.utils.conll import load_conll_dataset, tokenize_and_align_labels
 
     print(f"🚀 Starting training...")
 

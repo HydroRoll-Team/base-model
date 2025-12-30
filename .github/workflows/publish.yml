@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       create_test:
@@ -11,6 +13,10 @@ on:
         required: false
         default: false
         type: boolean
+      tag_name:
+        description: 'Tag name to release (e.g., v1.0.0). Use this to re-run release with fixed code.'
+        required: true
+        default: 'v1.0.0'
 
 permissions:
   contents: write
@@ -25,14 +31,25 @@ jobs:
       version: ${{ steps.version.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          # 最佳实践: Tag 触发时使用 main 分支代码,而不是 Tag 快照
+          # 这样修复代码后可以手动重新触发 workflow 而无需重新打 tag
+          ref: main
 
       - name: Extract version from tag
         id: version
         run: |
-          VERSION=${{ github.ref_name }}
+          # Tag 触发时使用 github.ref_name, 手动触发时使用 inputs.tag_name
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+            echo "🔧 Manual trigger mode: Using tag $VERSION from input"
+          else
+            VERSION="${{ github.ref_name }}"
+            echo "🏷️  Tag trigger mode: Using tag $VERSION from GitHub"
+          fi
           echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
           echo "Tag: $VERSION"
           echo "Version: ${VERSION#v}"
@@ -44,6 +61,7 @@ jobs:
 
       - name: Build with uv
         run: |
+          uv sync
           uv build
 
       - name: Check distribution
@@ -76,7 +94,7 @@ jobs:
 
     environment:
       name: test-pypi
-      url: https://test.pypi.org/p/base-model
+      url: https://test.pypi.org/p/base-model-trpgner
 
     permissions:
       id-token: write
@@ -95,11 +113,12 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    # Tag 推送时自动发布, 或手动触发且未指定测试模式时发布
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.create_test != true)
 
     environment:
       name: pypi
-      url: https://pypi.org/p/base-model
+      url: https://pypi.org/p/base-model-trpgner
 
     permissions:
       id-token: write
@@ -118,22 +137,27 @@ jobs:
     name: Create GitHub Release with ONNX
     needs: [build, publish-pypi]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    # Tag 推送时自动创建, 或手动触发且未指定测试模式时创建
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.create_test != true)
 
     permissions:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          # 使用 main 分支代码生成 CHANGELOG
+          ref: main
 
       - name: Generate CHANGELOG
         id: changelog
         uses: requarks/changelog-action@v1
         with:
           token: ${{ github.token }}
-          tag: ${{ github.ref_name }}
+          # 根据触发类型选择正确的 tag
+          tag: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
           includeInvalidCommits: true
           changelogFilePath: CHANGELOG.md
           writeToFile: true
@@ -150,29 +174,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ github.ref_name }}"
+          # 根据触发类型选择正确的 tag
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ github.ref_name }}"
+          fi
 
           cat > release_notes.md << 'EOF'
           ## 📦 安装
 
           ### pip 安装
           ```bash
-          pip install base-model
+          pip install base-model-trpgner
           ```
 
           ### 使用 uv（推荐）
           ```bash
-          uv pip install base-model
+          uv pip install base-model-trpgner
           ```
 
           ### 训练模式
           ```bash
-          pip install base-model[train]
+          pip install base-model-trpgner[train]
           ```
 
           ## 🚀 快速开始
           ```python
-          from basemodel import TRPGParser
+          from basemodeltrpgner import TRPGParser
 
           parser = TRPGParser()
           result = parser.parse("风雨 2024-06-08 21:44:59 剧烈的疼痛...")
@@ -184,18 +213,43 @@ jobs:
           ${{ steps.changelog.outputs.changes }}
           EOF
 
-          # 上传 Python 包和 ONNX 模型
-          gh release create "${VERSION}" \
-            --repo "${{ github.repository }}" \
-            --notes-file release_notes.md \
-            --title "🚀 ${VERSION}" \
-            artifacts/dist/* \
-            artifacts/onnx-artifact/* || true
+          # 检查 release 是否已存在
+          if gh release view "${VERSION}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "📝 Release ${VERSION} 已存在，更新 release 资源..."
+
+            # 删除旧的 assets 以便上传新的
+            ASSETS=$(gh release view "${VERSION}" --repo "${{ github.repository }}" --json assets -q '.assets[].name')
+            for asset in $ASSETS; do
+              echo "  删除旧资源: $asset"
+              gh release delete-asset "${VERSION}" "$asset" --repo "${{ github.repository }}" || true
+            done
+
+            # 更新 release notes 和 assets
+            gh release edit "${VERSION}" \
+              --repo "${{ github.repository }}" \
+              --notes-file release_notes.md \
+              --title "🚀 ${VERSION}"
+
+            # 上传新的资源
+            gh release upload "${VERSION}" \
+              artifacts/dist/* \
+              artifacts/onnx-artifact/* \
+              --repo "${{ github.repository }}" --clobber
+          else
+            echo "✨ 创建新 release ${VERSION}..."
+            gh release create "${VERSION}" \
+              --repo "${{ github.repository }}" \
+              --notes-file release_notes.md \
+              --title "🚀 ${VERSION}" \
+              artifacts/dist/* \
+              artifacts/onnx-artifact/*
+          fi
 
       - name: Commit CHANGELOG.md
         if: hashFiles('CHANGELOG.md') != ''
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           branch: main
-          commit_message: "docs: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]"
+          # 根据触发类型选择正确的 tag
+          commit_message: "docs: update CHANGELOG.md for ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }} [skip ci]"
           file_pattern: CHANGELOG.md
