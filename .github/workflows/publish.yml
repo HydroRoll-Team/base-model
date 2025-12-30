@@ -63,10 +63,16 @@ jobs:
 
       - name: Package model files
         run: |
-          # 直接打包 models/trpg-final 整个目录
+          # 创建临时目录，只包含推理需要的文件
+          mkdir -p model-package
           cd models/trpg-final
-          zip -r ../../model.zip .
+          cp model.onnx model.onnx.data config.json tokenizer.json tokenizer_config.json special_tokens_map.json vocab.txt ../../model-package/
           cd ../..
+
+          # 打包
+          cd model-package
+          zip -r ../model.zip .
+          cd ..
           ls -lh model.zip
 
       - uses: actions/upload-artifact@v4
