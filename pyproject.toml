@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "base-model-trpgner"
-version = "0.1.0"
+version = "0.1.1"
 description = "HydroRoll TRPG NER 模型 - 桌上角色扮演游戏日志命名实体识别"
 authors = [
     { name = "HsiangNianian", email = "leader@hydroroll.team" }
@@ -71,7 +71,7 @@ artifacts = [
     "models/trpg-final/special_tokens_map.json",
     "models/trpg-final/vocab.txt",
 ]
-# 共享数据：模型文件安装位置
+
 [tool.hatch.build.targets.wheel.shared-data]
 "models/trpg-final" = "basemodel/models/trpg-final"
 
