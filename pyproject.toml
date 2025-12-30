@@ -56,22 +56,11 @@ Issues = "https://github.com/HydroRoll-Team/base-model/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/base_model_trpgner"]
-artifacts = [
-    "src/base_model_trpgner/**/*.py",
-    "models/trpg-final/model.onnx",
-    "models/trpg-final/model.onnx.data",
-    "models/trpg-final/config.json",
-    "models/trpg-final/tokenizer.json",
-    "models/trpg-final/tokenizer_config.json",
-    "models/trpg-final/special_tokens_map.json",
-    "models/trpg-final/vocab.txt",
-]
-
-[tool.hatch.build.targets.wheel.shared-data]
-"models/trpg-final" = "base_model_trpgner/models/trpg-final"
+# 仅包含 Python 源码，模型文件首次运行时自动从 GitHub Release 下载
+artifacts = ["src/base_model_trpgner/**/*.py"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/models/trpg-final", "/README.md", "/COPYING"]
+include = ["/src", "/README.md", "/COPYING"]
 
 [tool.ruff]
 exclude = [

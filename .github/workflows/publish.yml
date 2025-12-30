@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       create_test:
@@ -201,7 +199,7 @@ jobs:
 
           ## 🚀 快速开始
           ```python
-          from basemodeltrpgner import TRPGParser
+          from base_model_trpgner import TRPGParser
 
           parser = TRPGParser()
           result = parser.parse("风雨 2024-06-08 21:44:59 剧烈的疼痛...")
