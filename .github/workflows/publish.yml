@@ -134,6 +134,11 @@ jobs:
           path: artifacts/
           merge-multiple: true
 
+      - name: Debug artifact structure
+        run: |
+          echo "📁 Artifact directory tree:"
+          tree artifacts/ || ls -laR artifacts/
+
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -188,7 +193,7 @@ jobs:
               --title "🚀 ${VERSION}"
             gh release upload "${VERSION}" \
               artifacts/dist/* \
-              artifacts/model.zip \
+              artifacts/model-zip/model.zip \
               --repo "${{ github.repository }}" --clobber
           else
             echo "✨ 创建新 release ${VERSION}..."
@@ -197,7 +202,7 @@ jobs:
               --notes-file release_notes.md \
               --title "🚀 ${VERSION}" \
               artifacts/dist/* \
-              artifacts/model.zip
+              artifacts/model-zip/model.zip
           fi
 
       - name: Commit CHANGELOG.md
