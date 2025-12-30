@@ -3,18 +3,13 @@ name: Publish to PyPI & GitHub Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
-      create_test:
-        description: 'Publish to Test PyPI'
-        required: false
-        default: false
-        type: boolean
       tag_name:
-        description: 'Tag name to release (e.g., v1.0.0). Use this to re-run release with fixed code.'
+        description: "Tag name to release (e.g., v1.0.0)"
         required: true
-        default: 'v1.0.0'
+        default: "v1.0.0"
 
 permissions:
   contents: write
@@ -33,24 +28,18 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # 最佳实践: Tag 触发时使用 main 分支代码,而不是 Tag 快照
-          # 这样修复代码后可以手动重新触发 workflow 而无需重新打 tag
           ref: main
 
       - name: Extract version from tag
         id: version
         run: |
-          # Tag 触发时使用 github.ref_name, 手动触发时使用 inputs.tag_name
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
-            echo "🔧 Manual trigger mode: Using tag $VERSION from input"
           else
             VERSION="${{ github.ref_name }}"
-            echo "🏷️  Tag trigger mode: Using tag $VERSION from GitHub"
           fi
           echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
           echo "Tag: $VERSION"
-          echo "Version: ${VERSION#v}"
 
       - name: Install uv
         run: |
@@ -72,63 +61,25 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Prepare ONNX artifact
+      - name: Package model files
         run: |
-          mkdir -p onnx-artifact
-          cp models/trpg-final/model.onnx onnx-artifact/
-          cp models/trpg-final/model.onnx.data onnx-artifact/ || true
-          cp models/trpg-final/config.json onnx-artifact/
-          cp models/trpg-final/tokenizer.json onnx-artifact/
-          cp models/trpg-final/tokenizer_config.json onnx-artifact/
-          cp models/trpg-final/special_tokens_map.json onnx-artifact/
-          cp models/trpg-final/vocab.txt onnx-artifact/
-
-          # 创建压缩包（方便用户下载）
-          cd onnx-artifact
-          zip -r ../model.zip .
-          cd ..
-          ls -lh onnx-artifact/
+          # 直接打包 models/trpg-final 整个目录
+          cd models/trpg-final
+          zip -r ../../model.zip .
+          cd ../..
           ls -lh model.zip
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: onnx-model
-          path: onnx-artifact/
 
       - uses: actions/upload-artifact@v4
         with:
           name: model-zip
           path: model.zip
 
-  publish-test-pypi:
-    name: Publish to Test PyPI
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && inputs.create_test == true
-
-    environment:
-      name: test-pypi
-      url: https://test.pypi.org/p/base-model-trpgner
-
-    permissions:
-      id-token: write
-
-    steps:
-      - name: Download dist
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to Test PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
   publish-pypi:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    # Tag 推送时自动发布, 或手动触发且未指定测试模式时发布
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.create_test != true)
+    # Tag 推送或手动触发时发布
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
 
     environment:
       name: pypi
@@ -151,8 +102,8 @@ jobs:
     name: Create GitHub Release with ONNX
     needs: [build, publish-pypi]
     runs-on: ubuntu-latest
-    # Tag 推送时自动创建, 或手动触发且未指定测试模式时创建
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.create_test != true)
+    # Tag 推送或手动触发时创建
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
 
     permissions:
       contents: write
@@ -170,7 +121,6 @@ jobs:
         uses: requarks/changelog-action@v1
         with:
           token: ${{ github.token }}
-          # 根据触发类型选择正确的 tag
           tag: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
           includeInvalidCommits: true
           changelogFilePath: CHANGELOG.md
@@ -180,26 +130,14 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: '*'
+          pattern: "*"
           path: artifacts/
           merge-multiple: true
 
-      - name: Verify artifact structure
-        run: |
-          echo "📁 Artifact directory structure:"
-          ls -la artifacts/
-          echo ""
-          echo "📦 dist contents:"
-          ls -la artifacts/dist/ || echo "dist not found"
-          echo ""
-          echo "🧠 onnx-model contents:"
-          ls -la artifacts/onnx-model/ || echo "onnx-model not found"
-
-      - name: Create Release with ONNX
+      - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 根据触发类型选择正确的 tag
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
           else
@@ -238,27 +176,18 @@ jobs:
           ${{ steps.changelog.outputs.changes }}
           EOF
 
-          # 检查 release 是否已存在
           if gh release view "${VERSION}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-            echo "📝 Release ${VERSION} 已存在，更新 release 资源..."
-
-            # 删除旧的 assets 以便上传新的
+            echo "📝 Release ${VERSION} 已存在，更新..."
             ASSETS=$(gh release view "${VERSION}" --repo "${{ github.repository }}" --json assets -q '.assets[].name')
             for asset in $ASSETS; do
-              echo "  删除旧资源: $asset"
               gh release delete-asset "${VERSION}" "$asset" --repo "${{ github.repository }}" || true
             done
-
-            # 更新 release notes 和 assets
             gh release edit "${VERSION}" \
               --repo "${{ github.repository }}" \
               --notes-file release_notes.md \
               --title "🚀 ${VERSION}"
-
-            # 上传新的资源
             gh release upload "${VERSION}" \
               artifacts/dist/* \
-              artifacts/onnx-model/* \
               artifacts/model.zip \
               --repo "${{ github.repository }}" --clobber
           else
@@ -268,7 +197,6 @@ jobs:
               --notes-file release_notes.md \
               --title "🚀 ${VERSION}" \
               artifacts/dist/* \
-              artifacts/onnx-model/* \
               artifacts/model.zip
           fi
 
@@ -277,6 +205,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           branch: main
-          # 根据触发类型选择正确的 tag
           commit_message: "docs: update CHANGELOG.md for ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }} [skip ci]"
           file_pattern: CHANGELOG.md
