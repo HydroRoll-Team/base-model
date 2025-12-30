@@ -8,7 +8,7 @@ version = "0.1.5"
 description = "HydroRoll TRPG NER 模型 - 桌上角色扮演游戏日志命名实体识别"
 authors = [{ name = "HsiangNianian", email = "leader@hydroroll.team" }]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = { text = "AFL-3.0" }
 keywords = [
     "hydroroll",
@@ -30,7 +30,11 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic",
 ]
 
-dependencies = ["numpy>=1.24.0", "onnxruntime>=1.23.2", "transformers>=4.57.3"]
+dependencies = [
+    "numpy>=1.24.0",
+    "onnxruntime>=1.23.2",
+    "transformers>=4.57.3",
+]
 
 [project.optional-dependencies]
 train = [
@@ -38,6 +42,7 @@ train = [
     "datasets>=2.18.0",
     "accelerate>=0.27.0",
     "tqdm>=4.66.0",
+    "onnxscript>=0.5.7",
 ]
 dev = [
     "base-model-trpgner[train]",
