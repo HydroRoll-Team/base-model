@@ -38,10 +38,6 @@ uv sync
 pip install -r requirements.txt
 ```
 
-```
-
-```
-
 ### 1. 数据准备
 
 将训练数据准备为 CoNLL 格式，支持两种格式：

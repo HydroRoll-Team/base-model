@@ -166,15 +166,16 @@ uv.lock
 # dataset
 dataset/
 
-# 忽略整个 models 目录，但保留推理需要的文件
-models/
-!models/**/*.onnx
-!models/**/*.onnx.data
-!models/**/config.json
-!models/**/tokenizer.json
-!models/**/tokenizer_config.json
-!models/**/special_tokens_map.json
-!models/**/vocab.txt
+# model files
+models/**/*
+!models/**/
+!models/trpg-final/*.onnx
+!models/trpg-final/*.onnx.data
+!models/trpg-final/config.json
+!models/trpg-final/tokenizer.json
+!models/trpg-final/tokenizer_config.json
+!models/trpg-final/special_tokens_map.json
+!models/trpg-final/vocab.txt
 
 # CI build artifacts
 model.zip
