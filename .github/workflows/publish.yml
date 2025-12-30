@@ -192,8 +192,7 @@ jobs:
               --notes-file release_notes.md \
               --title "🚀 ${VERSION}"
             gh release upload "${VERSION}" \
-              artifacts/dist/* \
-              artifacts/model-zip/model.zip \
+              artifacts/* \
               --repo "${{ github.repository }}" --clobber
           else
             echo "✨ 创建新 release ${VERSION}..."
@@ -201,8 +200,7 @@ jobs:
               --repo "${{ github.repository }}" \
               --notes-file release_notes.md \
               --title "🚀 ${VERSION}" \
-              artifacts/dist/* \
-              artifacts/model-zip/model.zip
+              artifacts/*
           fi
 
       - name: Commit CHANGELOG.md
