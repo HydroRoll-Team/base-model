@@ -1,0 +1,201 @@
+name: Publish to PyPI & GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      create_test:
+        description: 'Publish to Test PyPI'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${{ github.ref_name }}
+          echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
+          echo "Tag: $VERSION"
+          echo "Version: ${VERSION#v}"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Build with uv
+        run: |
+          uv build
+
+      - name: Check distribution
+        run: |
+          uv pip install twine
+          twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Prepare ONNX artifact
+        run: |
+          mkdir -p onnx-artifact
+          cp models/trpg-final/model.onnx onnx-artifact/
+          cp models/trpg-final/model.onnx.data onnx-artifact/ || true
+          ls -lh onnx-artifact/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onnx-model
+          path: onnx-artifact/
+
+  publish-test-pypi:
+    name: Publish to Test PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.create_test == true
+
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/p/base-model
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/base-model
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  create-release:
+    name: Create GitHub Release with ONNX
+    needs: [build, publish-pypi]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Generate CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+          includeInvalidCommits: true
+          changelogFilePath: CHANGELOG.md
+          writeToFile: true
+          useGitmojis: false
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*'
+          path: artifacts/
+          merge-multiple: true
+
+      - name: Create Release with ONNX
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.ref_name }}"
+
+          cat > release_notes.md << 'EOF'
+          ## 📦 安装
+
+          ### pip 安装
+          ```bash
+          pip install base-model
+          ```
+
+          ### 使用 uv（推荐）
+          ```bash
+          uv pip install base-model
+          ```
+
+          ### 训练模式
+          ```bash
+          pip install base-model[train]
+          ```
+
+          ## 🚀 快速开始
+          ```python
+          from basemodel import TRPGParser
+
+          parser = TRPGParser()
+          result = parser.parse("风雨 2024-06-08 21:44:59 剧烈的疼痛...")
+          print(result)
+          ```
+
+          ---
+
+          ${{ steps.changelog.outputs.changes }}
+          EOF
+
+          # 上传 Python 包和 ONNX 模型
+          gh release create "${VERSION}" \
+            --repo "${{ github.repository }}" \
+            --notes-file release_notes.md \
+            --title "🚀 ${VERSION}" \
+            artifacts/dist/* \
+            artifacts/onnx-artifact/* || true
+
+      - name: Commit CHANGELOG.md
+        if: hashFiles('CHANGELOG.md') != ''
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          branch: main
+          commit_message: "docs: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]"
+          file_pattern: CHANGELOG.md

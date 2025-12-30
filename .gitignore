@@ -165,4 +165,6 @@ uv.lock
 
 # model
 models/
+
+# dataset
 dataset/

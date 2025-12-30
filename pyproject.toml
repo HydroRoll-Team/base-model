@@ -1,19 +1,115 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "base-model"
+name = "base-model-trpgner"
 version = "0.1.0"
-description = "Add your description here"
+description = "HydroRoll TRPG NER 模型 - 桌上角色扮演游戏日志命名实体识别"
+authors = [
+    { name = "HsiangNianian", email = "leader@hydroroll.team" }
+]
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "AFL-3.0" }
+keywords = ["hydroroll", "trpg", "nlp", "ner", "chinese", "onnx", "robot framework"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Academic Free License (AFL)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
+
 dependencies = [
-    "gradio>=6.2.0",
-    "onnx>=1.20.0",
+    "numpy>=1.24.0",
     "onnxruntime>=1.23.2",
-    "onnxscript>=0.5.7",
-    "pynvml>=13.0.1",
-    "torch>=2.9.1",
     "transformers>=4.57.3",
 ]
 
-[[tool.uv.index]]
-url = "https://mirrors.aliyun.com/pypi/simple"
-default = true
+[project.optional-dependencies]
+train = [
+    "torch>=2.9.1",
+    "datasets>=2.18.0",
+    "accelerate>=0.27.0",
+    "tqdm>=4.66.0",
+]
+dev = [
+    "base-model-trpgner[train]",
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "ruff>=0.1.0",
+]
+webui = [
+    "base-model-trpgner[train]",
+    "gradio>=6.2.0",
+    "scikit-learn>=1.4.0",
+]
+all = [
+    "base-model-trpgner[train,webui,dev]",
+]
+
+[project.urls]
+Homepage = "https://ailab.hydroroll.team/"
+Repository = "https://github.com/HydroRoll-Team/base-model"
+Documentation = "https://ailab.hydroroll.team/"
+Issues = "https://github.com/HydroRoll-Team/base-model/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/basemodel"]
+# 只包含 ONNX 推理需要的文件（约 41MB）
+artifacts = [
+    "src/basemodel/**/*.py",
+    "models/trpg-final/model.onnx",
+    "models/trpg-final/model.onnx.data",
+    "models/trpg-final/config.json",
+    "models/trpg-final/tokenizer.json",
+    "models/trpg-final/tokenizer_config.json",
+    "models/trpg-final/special_tokens_map.json",
+    "models/trpg-final/vocab.txt",
+]
+# 共享数据：模型文件安装位置
+[tool.hatch.build.targets.wheel.shared-data]
+"models/trpg-final" = "basemodel/models/trpg-final"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/models/trpg-final",
+    "/README.md",
+    "/COPYING",
+]
+
+[tool.ruff]
+exclude = [
+    ".bzr", ".direnv", ".eggs", ".git", ".git-rewrite", ".hg",
+    ".ipynb_checkpoints", ".mypy_cache", ".nox", ".pants.d",
+    ".pyenv", ".pytest_cache", ".pytype", ".ruff_cache", ".svn",
+    ".tox", ".venv", ".vscode", "__pypackages__", "_build",
+    "buck-out", "build", "dist", "node_modules", "site-packages", "venv",
+]
+line-length = 100
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "N", "W"]
+ignore = ["E501"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.uv]
+dev-dependencies = []
