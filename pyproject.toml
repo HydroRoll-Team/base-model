@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "base-model-trpgner"
-version = "0.1.4"
+version = "0.1.5"
 description = "HydroRoll TRPG NER 模型 - 桌上角色扮演游戏日志命名实体识别"
 authors = [{ name = "HsiangNianian", email = "leader@hydroroll.team" }]
 readme = "README.md"
