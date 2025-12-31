@@ -65,7 +65,7 @@ artifacts = ["src/base_model_trpgner/**/*.py"]
 license-files = []
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/README.md", "/COPYING"]
+include = ["/src", "/README.md", "/LICENSE"]
 license-files = []
 
 [tool.ruff]
