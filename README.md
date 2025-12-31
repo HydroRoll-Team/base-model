@@ -245,24 +245,6 @@ uv run src/utils/word_conll_to_char_conll.py \
     output_char.conll
 ```
 
-## 高级功能
-
-### 自定义标签
-
-在 `src/webui/utils.py` 中修改 `DEFAULT_LABELS`：
-
-```python
-DEFAULT_LABELS = [
-    {"name": "timestamp", "color": "#87CEEB", "type": "text"},
-    {"name": "speaker", "color": "#90EE90", "type": "text"},
-    {"name": "dialogue", "color": "#FFB6C1", "type": "text"},
-    {"name": "action", "color": "#DDA0DD", "type": "text"},
-    {"name": "comment", "color": "#FFD700", "type": "text"},
-    # 添加新标签
-    {"name": "emotion", "color": "#FFA07A", "type": "text"},
-]
-```
-
 ## 系统要求
 
 ### 训练环境
