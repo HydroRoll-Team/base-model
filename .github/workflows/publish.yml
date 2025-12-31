@@ -71,6 +71,14 @@ jobs:
           uv pip install twine
           uv run twine check dist/*
 
+      - name: Publish to TestPyPI
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+        run: |
+          uv run twine upload --repository testpypi --skip-existing --verbose dist/*
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -92,36 +100,6 @@ jobs:
         with:
           name: model-zip
           path: model.zip
-
-  publish-testpypi:
-    name: Publish to TestPyPI
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    environment:
-      name: test-pypi
-      url: https://test.pypi.org/p/${{ github.sha }}/
-
-    steps:
-      - name: Download dist
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Publish to TestPyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
-        run: |
-          uv pip install twine
-          uv run twine upload --repository testpypi --skip-existing --verbose dist/*
 
   publish-pypi:
     name: Publish to PyPI
