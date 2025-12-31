@@ -95,9 +95,6 @@ jobs:
       name: test-pypi
       url: https://test.pypi.org/project/${{ github.sha }}/
 
-    permissions:
-      id-token: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -130,6 +127,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          username: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
   publish-pypi:
     name: Publish to PyPI
