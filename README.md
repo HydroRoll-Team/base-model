@@ -1,4 +1,4 @@
-# TRPG NER 模型 - HydroRoll 基础 NLP 模型
+# HydroRoll 水系社区基础预训练模型
 
 基于 MiniRBT (hfl/minirbt-h256) 的中文 TRPG（桌上角色扮演游戏）日志命名实体识别系统，支持训练、推理、ONNX 导出和 WebUI 可视化标注平台。
 
