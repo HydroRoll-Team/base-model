@@ -50,8 +50,19 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+      - name: Get commit hash
+        id: commit
+        run: |
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "hash=${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          echo "Commit hash: ${COMMIT_HASH}"
+
       - name: Build with uv
         run: |
+          # TestPyPI 发布时使用 commit hash 作为包名
+          if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            sed -i "s/^name = \".*\"/name = \"${{ steps.commit.outputs.hash }}\"/" pyproject.toml
+          fi
           uv sync
           uv build
 
@@ -93,64 +104,17 @@ jobs:
       url: https://test.pypi.org/p/${{ github.sha }}/
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Get commit hash
-        id: commit
-        run: |
-          COMMIT_HASH=$(git rev-parse HEAD)
-          echo "hash=${COMMIT_HASH}" >> $GITHUB_OUTPUT
-          echo "Commit hash: ${COMMIT_HASH}"
-
       - name: Download dist
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
-      - name: Rename package with commit hash
-        run: |
-          COMMIT_HASH="${{ steps.commit.outputs.hash }}"
-          cd dist
-          for file in *; do
-            # 重命名文件：base-model-trpgner-xxx -> {commit_hash}-xxx
-            new_name=$(echo "$file" | sed "s/base_model_trpgner/${COMMIT_HASH}/g")
-            mv "$file" "$new_name"
-          done
-          ls -la
-
-      # 检查并修复 PKG-INFO 中的包名
-      - name: Fix package metadata
-        run: |
-          COMMIT_HASH="${{ steps.commit.outputs.hash }}"
-          cd dist
-          # 修改 .tar.gz 中的 PKG-INFO
-          for file in *.tar.gz; do
-            tar -xzf "$file"
-            # 获取解压后的目录名（第一个组件）
-            dir=$(tar -tzf "$file" | head -1 | cut -d"/" -f1)
-            (cd "$dir" && sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" PKG-INFO)
-            tar -czf "$file" "${dir}/"
-            rm -rf "$dir"
-          done
-          # 修改 .whl 中的 METADATA
-          for file in *.whl; do
-            unzip -q "$file"
-            # 查找 dist-info 目录
-            dist_dir=$(find . -maxdepth 1 -type d -name "*.dist-info")
-            (cd "$dist_dir" && sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" METADATA)
-            zip -qr "$file" "${dist_dir#./}"
-            rm -rf "$dist_dir"
-          done
-          ls -la
-
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy
           password: ${{ secrets.TEST_PYPI_TOKEN }}
-          verbose: true
 
   publish-pypi:
     name: Publish to PyPI
