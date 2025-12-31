@@ -117,6 +117,7 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           skip-existing: true
           verbose: true
+          attestations: false
 
   publish-pypi:
     name: Publish to PyPI
