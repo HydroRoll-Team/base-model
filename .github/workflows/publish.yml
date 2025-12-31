@@ -120,11 +120,40 @@ jobs:
           done
           ls -la
 
+      # 检查并修复 PKG-INFO 中的包名
+      - name: Fix package metadata
+        run: |
+          COMMIT_HASH="${{ steps.commit.outputs.hash }}"
+          cd dist
+          # 修改 .tar.gz 中的 METADATA 或 PKG-INFO
+          for file in *.tar.gz; do
+            tar -xzf "$file"
+            dir=$(tar -tzf "$file" | head -1 | cut -f1 -d"/")
+            cd "$dir"
+            # 修改 PKG-INFO 中的 Name 字段
+            sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" PKG-INFO
+            cd ..
+            tar -czf "$file" "${dir}/"
+            rm -rf "$dir"
+          done
+          # 修改 .whl 中的 METADATA
+          for file in *.whl; do
+            unzip -q "$file"
+            dir=$(unzip -Z1 "$file" | head -1)
+            cd "$dir"
+            sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" *.dist-info/METADATA
+            cd ..
+            zip -qr "$file" "${dir}/"
+            rm -rf "$dir"
+          done
+          ls -la
+
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy
           password: ${{ secrets.TEST_PYPI_TOKEN }}
+          verbose: true
 
   publish-pypi:
     name: Publish to PyPI
