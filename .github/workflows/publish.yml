@@ -110,14 +110,18 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Install twine
-        run: pip install twine
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
         run: |
-          twine upload --repository testpypi --skip-existing --verbose dist/*
+          uv pip install twine
+          uv run twine upload --repository testpypi --skip-existing --verbose dist/*
 
   publish-pypi:
     name: Publish to PyPI
