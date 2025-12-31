@@ -122,7 +122,7 @@ jobs:
         run: |
           uv v
           uv pip install twine
-          uv run twine upload --repository testpypi --skip-existing --verbose base-model/dist/*
+          uv run twine upload --repository testpypi --skip-existing --verbose dist/*
 
   publish-pypi:
     name: Publish to PyPI
