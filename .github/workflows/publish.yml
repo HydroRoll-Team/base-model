@@ -120,10 +120,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
         run: |
-          cd ..
-          ls -la
-          pwd
-          uv sync
+          uv v
           uv pip install twine
           uv run twine upload --repository testpypi --skip-existing --verbose base-model/dist/*
 
