@@ -9,7 +9,7 @@ description = "HydroRoll TRPG NER 模型 - 桌上角色扮演游戏日志命名�
 authors = [{ name = "HsiangNianian", email = "leader@hydroroll.team" }]
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "AFL-3.0" }
+license = "AFL-3.0"
 keywords = [
     "hydroroll",
     "trpg",
@@ -66,6 +66,7 @@ license-files = []
 
 [tool.hatch.build.targets.sdist]
 include = ["/src", "/README.md", "/COPYING"]
+license-files = []
 
 [tool.ruff]
 exclude = [
