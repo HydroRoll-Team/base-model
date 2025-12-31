@@ -2,8 +2,12 @@ name: Publish to PyPI & GitHub Release
 
 on:
   push:
+    # Tag 推送：发布到正式 PyPI
     tags:
       - "v*.*.*"
+    # Push 到 main 分支：发布到 TestPyPI
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       tag_name:
@@ -79,6 +83,53 @@ jobs:
         with:
           name: model-zip
           path: model.zip
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # Push 到 main 分支（非 tag）时发布到 TestPyPI
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/project/${{ github.sha }}/
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Get commit hash
+        id: commit
+        run: |
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "hash=${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          echo "Commit hash: ${COMMIT_HASH}"
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Rename package with commit hash
+        run: |
+          COMMIT_HASH="${{ steps.commit.outputs.hash }}"
+          cd dist
+          for file in *; do
+            # 重命名文件：base-model-trpgner-xxx -> {commit_hash}-xxx
+            new_name=$(echo "$file" | sed "s/base_model_trpgner/${COMMIT_HASH}/g")
+            mv "$file" "$new_name"
+          done
+          ls -la
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
 
   publish-pypi:
     name: Publish to PyPI
