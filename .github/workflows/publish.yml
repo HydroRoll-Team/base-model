@@ -125,26 +125,23 @@ jobs:
         run: |
           COMMIT_HASH="${{ steps.commit.outputs.hash }}"
           cd dist
-          # 修改 .tar.gz 中的 METADATA 或 PKG-INFO
+          # 修改 .tar.gz 中的 PKG-INFO
           for file in *.tar.gz; do
             tar -xzf "$file"
-            dir=$(tar -tzf "$file" | head -1 | cut -f1 -d"/")
-            cd "$dir"
-            # 修改 PKG-INFO 中的 Name 字段
-            sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" PKG-INFO
-            cd ..
+            # 获取解压后的目录名（第一个组件）
+            dir=$(tar -tzf "$file" | head -1 | cut -d"/" -f1)
+            (cd "$dir" && sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" PKG-INFO)
             tar -czf "$file" "${dir}/"
             rm -rf "$dir"
           done
           # 修改 .whl 中的 METADATA
           for file in *.whl; do
             unzip -q "$file"
-            dir=$(unzip -Z1 "$file" | head -1)
-            cd "$dir"
-            sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" *.dist-info/METADATA
-            cd ..
-            zip -qr "$file" "${dir}/"
-            rm -rf "$dir"
+            # 查找 dist-info 目录
+            dist_dir=$(find . -maxdepth 1 -type d -name "*.dist-info")
+            (cd "$dist_dir" && sed -i "s/^Name: base-model-trpgner/Name: ${COMMIT_HASH}/" METADATA)
+            zip -qr "$file" "${dist_dir#./}"
+            rm -rf "$dist_dir"
           done
           ls -la
 
