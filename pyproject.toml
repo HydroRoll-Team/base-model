@@ -34,7 +34,9 @@ classifiers = [
 ]
 
 dependencies = [
+    "aiohttp>=3.13.2",
     "numpy>=1.24.0",
+    "ollama>=0.6.1",
     "onnxruntime>=1.23.2",
     "transformers>=4.57.3",
 ]
@@ -52,6 +54,7 @@ dev = [
     "pytest>=8.0.0",
     "black>=24.0.0",
     "ruff>=0.1.0",
+    "dotenv>=0.9.9",
 ]
 webui = ["base-model-trpgner[train]", "gradio>=6.2.0", "scikit-learn>=1.4.0"]
 all = ["base-model-trpgner[train,webui,dev]"]
