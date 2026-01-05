@@ -187,9 +187,7 @@ for e in entities:
     conf = round(float(np.mean(e["probs"])), 3)
     typ = e["type"]
     if typ in ("timestamp", "speaker"):
-        ent_text = (
-            fix_timestamp(ent_text) if typ == "timestamp" else fix_speaker(ent_text)
-        )
+        ent_text = fix_timestamp(ent_text) if typ == "timestamp" else fix_speaker(ent_text)
         out["metadata"][typ] = ent_text
     else:
         out["content"].append({"type": typ, "content": ent_text, "confidence": conf})
