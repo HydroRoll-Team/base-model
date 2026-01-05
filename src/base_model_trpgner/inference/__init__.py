@@ -232,6 +232,9 @@ class TRPGParser:
             >>> result['metadata']['speaker']
             '风雨'
         """
+        if max_length > 512:
+            raise ValueError("max_length 不能超过 512")
+
         # Tokenize
         inputs = self.tokenizer(
             text,
