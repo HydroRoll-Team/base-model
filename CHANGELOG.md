@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.1.9] - 2026-01-05
+### Bug Fixes
+- [`9ae58c4`](https://github.com/HydroRoll-Team/base-model/commit/9ae58c4d2696c3c693330b9d7a5c1b738214d184) - update version number to 0.1.9 in pyproject.toml *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+### Refactors
+- [`077fb79`](https://github.com/HydroRoll-Team/base-model/commit/077fb791ca6734a7590d496c3e3fe5d25d3492e9) - clean up code formatting and improve print messages in main.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+- [`911a561`](https://github.com/HydroRoll-Team/base-model/commit/911a5610703a4ee2d7438e1398c5bbe8079099cc) - remove unused fix_speaker function and clean up code in onnx_infer.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+
 ## [v0.1.8] - 2026-01-05
 ### New Features
 - [`f51ebaf`](https://github.com/HydroRoll-Team/base-model/commit/f51ebaf36593dffb066ad3c4f7f98a0827d8f8e9) - improve code formatting and readability in conll_to_dataset.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
@@ -95,3 +104,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.1.6]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.5...v0.1.6
 [v0.1.7]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.6...v0.1.7
 [v0.1.8]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.7...v0.1.8
+[v0.1.9]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.8...v0.1.9
