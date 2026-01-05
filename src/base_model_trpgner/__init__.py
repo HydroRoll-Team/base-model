@@ -22,7 +22,7 @@ try:
     from importlib.metadata import version
     __version__ = version("base_model_trpgner")
 except Exception:
-    __version__ = "0.1.3"
+    __version__ = "0.1.8"
 
 __all__ = [
     "__version__",
