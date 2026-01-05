@@ -25,7 +25,7 @@ def word_to_char_labels(text: str, word_labels: List[Tuple[str, str]]) -> List[s
         if pos >= len(text):
             break
 
-        if text[pos: pos + len(token)] == token:
+        if text[pos : pos + len(token)] == token:
             for i in range(len(token)):
                 idx = pos + i
                 if idx < len(char_labels):
@@ -86,19 +86,23 @@ def parse_conll_file(filepath: str) -> List[Dict[str, Any]]:
         for line in lines:
             if line.startswith("-DOCSTART-"):
                 if current_text:
-                    samples.append({
-                        "text": "".join(current_text),
-                        "char_labels": current_labels.copy(),
-                    })
+                    samples.append(
+                        {
+                            "text": "".join(current_text),
+                            "char_labels": current_labels.copy(),
+                        }
+                    )
                     current_text, current_labels = [], []
                 continue
 
             if not line:
                 if current_text:
-                    samples.append({
-                        "text": "".join(current_text),
-                        "char_labels": current_labels.copy(),
-                    })
+                    samples.append(
+                        {
+                            "text": "".join(current_text),
+                            "char_labels": current_labels.copy(),
+                        }
+                    )
                     current_text, current_labels = [], []
                 continue
 
@@ -110,10 +114,12 @@ def parse_conll_file(filepath: str) -> List[Dict[str, Any]]:
                 current_labels.append(label)
 
         if current_text:
-            samples.append({
-                "text": "".join(current_text),
-                "char_labels": current_labels.copy(),
-            })
+            samples.append(
+                {
+                    "text": "".join(current_text),
+                    "char_labels": current_labels.copy(),
+                }
+            )
 
     return samples
 
@@ -152,9 +158,9 @@ def load_conll_dataset(conll_dir_or_files: str) -> Tuple[Dataset, List[str]]:
             i_label = "I" + label[1:]
             if i_label not in label_list:
                 label_list.append(i_label)
-                print(f"⚠️  Added missing {i_label} for {label}")
+                print(f"Added missing {i_label} for {label}")
 
-    print(f"✅ Loaded {len(all_samples)} samples, {len(label_list)} labels: {label_list}")
+    print(f"Loaded {len(all_samples)} samples, {len(label_list)} labels: {label_list}")
     return Dataset.from_list(all_samples), label_list
 
 
