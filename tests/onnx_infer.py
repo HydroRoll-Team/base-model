@@ -116,14 +116,6 @@ def fix_timestamp(ts):
     return ts
 
 
-def fix_speaker(spk):
-    if not spk:
-        return spk
-    spk = re.sub(r"[^\w\s\u4e00-\u9fff]+$", "", spk)
-    if len(spk) == 1 and re.match(r"^[风雷电雨雪火水木金]", spk):
-        return spk + "某"
-    return spk
-
 
 out = {"metadata": {}, "content": []}
 for e in entities:
@@ -132,10 +124,10 @@ for e in entities:
     conf = round(float(np.mean(e["probs"])), 3)
     typ = e["type"]
     if typ in ("timestamp", "speaker"):
-        if typ == "timestamp":
-            ent_text = fix_timestamp(ent_text)
-        else:
-            ent_text = fix_speaker(ent_text)
+        # if typ == "timestamp":
+        #     ent_text = fix_timestamp(ent_text)
+        # else:
+        #     ent_text = ent_text
         out["metadata"][typ] = ent_text
     else:
         out["content"].append({"type": typ, "content": ent_text, "confidence": conf})
