@@ -214,13 +214,13 @@ class TRPGParser:
                 9: "B-timestamp", 10: "I-timestamp",
             }
 
-    def parse(self, text: str) -> Dict[str, Any]:
+    def parse(self, text: str, max_length: int = 512) -> Dict[str, Any]:
         """
         解析单条 TRPG 日志
 
         Args:
             text: 待解析的日志文本
-
+            max_length: 最大序列长度，大小512以内
         Returns:
             包含 metadata 和 content 的字典
             - metadata: speaker, timestamp
@@ -239,7 +239,7 @@ class TRPGParser:
             return_offsets_mapping=True,
             padding="max_length",
             truncation=True,
-            max_length=128,
+            max_length=max_length or 512,
         )
 
         # 推理

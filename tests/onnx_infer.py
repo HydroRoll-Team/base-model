@@ -19,7 +19,7 @@ def softmax(x):
     return e / e.sum(axis=-1, keepdims=True)
 
 text = sys.argv[1] if len(sys.argv) > 1 else "风雨 2024-06-08 21:44:59 剧烈的疼痛..."
-inputs = tok(text, return_tensors="np", return_offsets_mapping=True, padding="max_length", truncation=True, max_length=128)
+inputs = tok(text, return_tensors="np", return_offsets_mapping=True, padding="max_length", truncation=True, max_length=512)
 
 feed = {}
 for inp in sess.get_inputs():
