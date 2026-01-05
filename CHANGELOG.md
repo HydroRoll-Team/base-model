@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.1.8] - 2026-01-05
+### New Features
+- [`f51ebaf`](https://github.com/HydroRoll-Team/base-model/commit/f51ebaf36593dffb066ad3c4f7f98a0827d8f8e9) - improve code formatting and readability in conll_to_dataset.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+- [`6713e38`](https://github.com/HydroRoll-Team/base-model/commit/6713e38407bdbc1495692c7e297c027a1dc3f612) - enhance code readability and formatting in onnx_infer.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+### Bug Fixes
+- [`1a6d6ed`](https://github.com/HydroRoll-Team/base-model/commit/1a6d6edbe14f00df021a1e826d8d30555f301e30) - simplify conditional assignment for entity text processing in test_onnx_only_infer.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+- [`e4abb6c`](https://github.com/HydroRoll-Team/base-model/commit/e4abb6c2bc62dcb68d14fd4d44ff48d3773ed6d8) - update version number to 0.1.8 in __init__.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+- [`182291c`](https://github.com/HydroRoll-Team/base-model/commit/182291cdbec8419da4097f8730249070f74bd04b) - update version number to 0.1.8 in pyproject.toml *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+### Refactors
+- [`65f48da`](https://github.com/HydroRoll-Team/base-model/commit/65f48da74e446df81b17d0cc9bf203b75947fff1) - improve code formatting and readability in utils/__init__.py *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+- [`a9e98ae`](https://github.com/HydroRoll-Team/base-model/commit/a9e98ae197a49b8a6629601e3be7b9d0507eb6da) - streamline import statements and improve print messages in training module *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+- [`db23ff8`](https://github.com/HydroRoll-Team/base-model/commit/db23ff87d996bfb9c63215b30f682df94f198299) - improve error handling and enhance code readability in inference module *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+
 ## [v0.1.7] - 2026-01-05
 ### New Features
 - [`7b15d14`](https://github.com/HydroRoll-Team/base-model/commit/7b15d1470addfe6f7e7079c9f52c1ed7ded1484d) - add workflow to publish to TestPyPI on main branch push *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
@@ -78,3 +94,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.1.5]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.4...v0.1.5
 [v0.1.6]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.5...v0.1.6
 [v0.1.7]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.6...v0.1.7
+[v0.1.8]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.7...v0.1.8
