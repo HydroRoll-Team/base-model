@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.1.10] - 2026-01-06
+### Bug Fixes
+- [`299bb15`](https://github.com/HydroRoll-Team/base-model/commit/299bb151d3db43f4b11f07b852aa9efbedde929a) - update version number to 0.1.10 in pyproject.toml *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+### Chores
+- [`d5fe97f`](https://github.com/HydroRoll-Team/base-model/commit/d5fe97fded336596d2991ffe6965669d14f7efb1) - update ONNX model files for improved performance *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
+
+
 ## [v0.1.9] - 2026-01-05
 ### Bug Fixes
 - [`9ae58c4`](https://github.com/HydroRoll-Team/base-model/commit/9ae58c4d2696c3c693330b9d7a5c1b738214d184) - update version number to 0.1.9 in pyproject.toml *(commit by [@HsiangNianian](https://github.com/HsiangNianian))*
@@ -105,3 +113,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.1.7]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.6...v0.1.7
 [v0.1.8]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.7...v0.1.8
 [v0.1.9]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.8...v0.1.9
+[v0.1.10]: https://github.com/HydroRoll-Team/base-model/compare/v0.1.9...v0.1.10
